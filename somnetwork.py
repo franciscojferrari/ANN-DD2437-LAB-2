@@ -70,7 +70,7 @@ class SOMNetwork:
         )
         return np.argmin(distance_matrix)
 
-    def run(self):
+    def run(self) -> None:
         """Run the algorithm."""
         # Iterate over the data points in data set (animals).
         for data_point_idx in range(self.nr_animals):
@@ -86,7 +86,7 @@ class SOMNetwork:
             # Update the weights.
             self.update_weights(neighborhood_list)
 
-    def predict(self):
+    def predict(self) -> None:
         """Find the closest node for every animal.
 
         Returns a list containing the closest node for each datapoint (animal).
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     result_dict = dict(sorted(result_dict.items(), key=lambda item: item[1]))
     print(result_dict)
 
-    """4.1 Topological Ordering of Animal Species"""
+    """4.2 Cyclic Tour"""
     # Parameters.
     number_nodes = 10
     learning_rate = 0.25
@@ -131,9 +131,9 @@ if __name__ == "__main__":
 
     city_data = load_cities()
     model = SOMNetwork(city_data, number_nodes, learning_rate, neighbors_start)
-    for i in range(epochs):
+    for epoch in range(epochs):
         model.run()
-        model.update_neighbors_to_use(i, epochs)
+        model.update_neighbors_to_use(epoch, epochs)
 
     # Plot the cities and the nodes with it's  connections.
     plot_city_data(city_data)

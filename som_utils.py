@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple
+from typing import Tuple, Any
 import matplotlib.pyplot as plt
 
 
@@ -14,6 +14,12 @@ def load_animals() -> Tuple[np.array, np.array]:
 def load_cities() -> np.array:
     data = np.genfromtxt("data_lab2/cities.dat", dtype=None, delimiter=",")
     data = np.resize(data, (10, 2))
+    return data
+
+
+def load_mp_data() -> np.array:
+    data = np.genfromtxt("data_lab2/cities.dat", dtype=None, delimiter=",")
+    data = np.resize(data, (349, 31))
     return data
 
 
@@ -45,3 +51,13 @@ def plot_weight_data(data):
     plt.xlim(min(x) - 0.2, max(x) + 0.2)
     plt.ylim(min(y) - 0.2, max(y) + 0.2)
     plt.show()
+
+
+def get_neighbor_coords(x, y):
+    to_add = [[0, 1], [-1, 0], [0, -1], [1, 0]]
+
+    return [(x + xx, y + yy) for xx, yy in to_add]
+
+
+def check_coord(coords, max_index):
+    return (0 <= coords[0] <= max_index) and (0 <= coords[1] <= max_index)
