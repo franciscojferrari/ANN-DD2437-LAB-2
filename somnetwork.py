@@ -1,8 +1,16 @@
 import numpy as np
-from som_utils import load_animals, update_index, load_cities, plot_city_data, plot_weight_data
+from som_utils import (
+    load_animals,
+    update_index,
+    load_cities,
+    plot_city_data,
+    plot_weight_data,
+)
 
 
 class SOMNetwork:
+    """SOM Network with one-dimensional grid."""
+
     def __init__(self, data, nr_nodes, lr, neighbors):
         self.data = data
         self.nr_nodes = nr_nodes
@@ -21,9 +29,8 @@ class SOMNetwork:
 
     def update_neighbors_to_use(self, current_epoch: int, nr_epochs: int) -> None:
         """Decaying function for the number of neighbors used."""
-        self.neighbors_to_use = (
-            int(self.neighbors_start - self.neighbors_start * current_epoch / nr_epochs)
-
+        self.neighbors_to_use = int(
+            self.neighbors_start - self.neighbors_start * current_epoch / nr_epochs
         )
 
     def update_weights(self, node_indices: np.array) -> None:
@@ -34,7 +41,7 @@ class SOMNetwork:
             )
 
     def find_neighbors(self, ind):
-        """With the indice of the current node it finds all neighbors and return the indices of
+        """With the index of the current node it finds all neighbors and return the indices of
         the neighbors.
 
         Note: only works if number of neighbors is smaller than total number of nodes.
@@ -131,7 +138,3 @@ if __name__ == "__main__":
     # Plot the cities and the nodes with it's  connections.
     plot_city_data(city_data)
     plot_weight_data(model.weights)
-
-
-
-

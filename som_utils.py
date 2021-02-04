@@ -5,18 +5,14 @@ import matplotlib.pyplot as plt
 
 
 def load_animals() -> Tuple[np.array, np.array]:
-    data = np.genfromtxt("data_lab2/animals.dat",
-                         dtype=None,
-                         delimiter=",")
-    data = np.resize(data,  (32, 84))
+    data = np.genfromtxt("data_lab2/animals.dat", dtype=None, delimiter=",")
+    data = np.resize(data, (32, 84))
     animal_names = np.array(pd.read_csv("data_lab2/animalnames.txt", header=None)[0])
     return data, animal_names
 
 
 def load_cities() -> np.array:
-    data = np.genfromtxt('data_lab2/cities.dat',
-                         dtype=None,
-                         delimiter=",")
+    data = np.genfromtxt("data_lab2/cities.dat", dtype=None, delimiter=",")
     data = np.resize(data, (10, 2))
     return data
 
@@ -44,8 +40,8 @@ def plot_weight_data(data):
     x = data[:, 0]
     y = data[:, 1]
     plt.scatter(x, y)
-    plt.plot(x, y, 'red')
-    plt.plot([x[0], x[-1]], [y[0], y[-1]], 'red')
+    plt.plot(x, y, "red")
+    plt.plot([x[0], x[-1]], [y[0], y[-1]], "red")
     plt.xlim(min(x) - 0.2, max(x) + 0.2)
     plt.ylim(min(y) - 0.2, max(y) + 0.2)
     plt.show()
