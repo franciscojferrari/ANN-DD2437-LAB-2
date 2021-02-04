@@ -1,5 +1,5 @@
 import numpy as np
-from som_utils import load_animals, update_index
+from som_utils import load_animals, update_index, load_cities, plot_city_data, plot_weight_data
 
 
 class SOMNetwork:
@@ -11,18 +11,20 @@ class SOMNetwork:
         self.nr_animals, self.nr_attributes = data.shape
         self.weights = None
         self.lr = lr
-        self.init_weights()
-
         self.current_data_point = None
 
+        self.init_weights()
+
     def init_weights(self) -> None:
+        """Initialise the weights of the SOM Network."""
         self.weights = np.random.rand(self.nr_nodes, self.nr_attributes)
 
     def update_neighbors_to_use(self, current_epoch: int, nr_epochs: int) -> None:
         """Decaying function for the number of neighbors used."""
-        self.neighbors_to_use = int(
-            self.neighbors_start - self.neighbors_start * current_epoch / nr_epochs
-        ) + 1
+        self.neighbors_to_use = (
+            int(self.neighbors_start - self.neighbors_start * current_epoch / nr_epochs)
+
+        )
 
     def update_weights(self, node_indices: np.array) -> None:
         """Update the weights for the given nodes."""
@@ -38,16 +40,16 @@ class SOMNetwork:
         Note: only works if number of neighbors is smaller than total number of nodes.
         """
         assert self.neighbors_to_use < self.nr_nodes
-        neighborhood_list = (
-            np.array(
-                [
-                    update_index(i + ind, self.nr_nodes - 1)
-                    for i in range(
-                        -self.neighbors_to_use // 2, self.neighbors_to_use // 2 + 1
-                    )
-                ]
-            )
+        neighborhood_list = np.array(
+            [
+                update_index(i + ind, self.nr_nodes - 1)
+                for i in range(
+                    -self.neighbors_to_use // 2, self.neighbors_to_use // 2 + 1
+                )
+            ]
         )
+        if self.neighbors_to_use == 0:
+            return [ind]
         return neighborhood_list
 
     def calc_distance(self, x):
@@ -78,7 +80,10 @@ class SOMNetwork:
             self.update_weights(neighborhood_list)
 
     def predict(self):
-        """Find the closest node for every animal."""
+        """Find the closest node for every animal.
+
+        Returns a list containing the closest node for each datapoint (animal).
+        """
         animal_node_list = []
         for data_point_idx in range(self.nr_animals):
             self.current_data_point = self.data[data_point_idx]
@@ -89,6 +94,7 @@ class SOMNetwork:
 
 if __name__ == "__main__":
 
+    """4.1 Topological Ordering of Animal Species"""
     # Parameters.
     number_nodes = 100
     learning_rate = 0.2
@@ -105,6 +111,27 @@ if __name__ == "__main__":
 
     # Check the results.
     idx_list = model.predict()
-
-    result_dict = {animal: idx for animal, idx in zip(animal_names,  idx_list)}
+    result_dict = {animal: idx for animal, idx in zip(animal_names, idx_list)}
     result_dict = dict(sorted(result_dict.items(), key=lambda item: item[1]))
+    print(result_dict)
+
+    """4.1 Topological Ordering of Animal Species"""
+    # Parameters.
+    number_nodes = 10
+    learning_rate = 0.25
+    neighbors_start = 3
+    epochs = 40
+
+    city_data = load_cities()
+    model = SOMNetwork(city_data, number_nodes, learning_rate, neighbors_start)
+    for i in range(epochs):
+        model.run()
+        model.update_neighbors_to_use(i, epochs)
+
+    # Plot the cities and the nodes with it's  connections.
+    plot_city_data(city_data)
+    plot_weight_data(model.weights)
+
+
+
+
