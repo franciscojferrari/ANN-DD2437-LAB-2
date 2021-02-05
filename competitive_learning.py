@@ -11,15 +11,16 @@ Parameters:
     num_clusters: int; 
     init_type: str; How the algorithm initializes the centers of the clusters.
         init_type can be: "random" or "samples". 
-        If random: the centers are initialized as a uniform distribution 
+        If random: the centers are initialized from a uniform distribution 
         that tries to cover the sample space.
         If samples: random samples are chosen as center inits.
-    num_winners: int; A way to ensure that all centers will be updated.
+    num_winners: int; A way to aviod the dead unit problem.
         The first num_winners will be updated.  
 """
 
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 class CompetitiveLearning(object):
     def __init__(self, num_clusters, init_type="samples", num_winners = 1):
@@ -28,7 +29,6 @@ class CompetitiveLearning(object):
         self.num_winners = num_winners
     
     def fit(self, samples, num_epochs, l_rate):
-        self.input_dim = samples.shape[1]
         if self.init_type == "samples":
             self.centers = self.choose_random_samples(samples)
         else:
@@ -39,7 +39,7 @@ class CompetitiveLearning(object):
     
     def compute_epoch(self, samples, l_rate):
         for sample in samples:
-            self.centers = self.update_winners(sample, l_rate)
+            self.update_winners(sample, l_rate)
         return
     
     def update_winners(self, sample, l_rate):
@@ -50,7 +50,17 @@ class CompetitiveLearning(object):
         return
     
     def uniform_init(self, samples):
-        return
+        num_samples, input_dim = samples.shape
+        # 1d arrays: minimum and maximum values found for each input dimension
+        min_values = np.min(samples, axis=0)
+        max_values = np.max(samples, axis=0)
+        self.centers = np.zeros(shape=(self.num_clusters, input_dim))
+        for dim in range(input_dim):
+            min_val = min_values[dim]
+            max_val = max_values[dim]
+            self.centers[:, dim] = np.random.uniform(low=min_val, high=max_val,
+                                                        size=self.num_clusters)
+        return self.centers
     
     def choose_random_samples(self, samples):
         num_samples = samples.shape[0]
@@ -75,15 +85,22 @@ def find_closest_centers(sample, centers, num_closest):
     return indexes_closest
 
 """
-centers = np.array([[1., 2], [-1, 0], [-1, 2]])
-sample = np.array([1, 2.])
-closest_centers = find_closest_centers(sample, centers, num_closest=2)
-print(closest_centers)
-"""
-cl = CompetitiveLearning(num_clusters=2)
+SMALL EXAMPLE
+Let's try to find the center of a cluster that comes from a gaussian distrib'
 
-samples = np.array([[1., 2], [-1, 0], [-1, 2]])
-random_samples = cl.choose_random_samples(samples)
-print(random_samples)
+num_samples = 100
+input_dim = 2
+samples = np.random.normal(loc=0.5, scale=3, size=(num_samples, input_dim))
+cl = CompetitiveLearning(num_clusters=1, init_type="uniform")
+centers = cl.fit(samples, num_epochs=100, l_rate=0.01)
+print(centers)
+
+plt.figure()
+plt.scatter(x=samples[:, 0], y=samples[:, 1], c="black")
+plt.scatter(x=centers[:, 0], y=centers[:, 1], c="yellow")
+
+"""
+
+
 
 
