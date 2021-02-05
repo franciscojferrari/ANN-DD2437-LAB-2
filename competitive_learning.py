@@ -27,7 +27,14 @@ class CompetitiveLearning(object):
         self.num_winners = num_winners
     
     def fit(self, samples, num_epochs, l_rate):
-        return
+        self.input_dim = samples.shape[1]
+        if self.init_type == "samples":
+            self.centers = self.choose_random_samples(samples)
+        else:
+            self.centers = self.uniform_init(samples)
+        for epoch in range(num_epochs):
+            self.compute_epoch(samples, l_rate)
+        return self.centers
     
     def compute_epoch(samples, l_rate):
         return
@@ -38,6 +45,6 @@ class CompetitiveLearning(object):
     def uniform_init(self, samples):
         return
     
-    def choose_random_samples(self):
+    def choose_random_samples(samples, self):
         return
 
