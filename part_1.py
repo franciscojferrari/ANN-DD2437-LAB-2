@@ -41,16 +41,17 @@ class rbfNN:
     def train_delta(self, n, rbf_centers = "linspace"):
         self.n = n
         self.init_mus(rbf_centers)
-        w = np.random.randn(n)
+        self.w = np.random.randn(n, 1)
         for i in range(self.epochs):
             x, y = shuffle(self.x, self.y)
             for (x_k, y_k) in list(zip(x, y)):
-                phi_k = self.generate_rbf_nodes([x_k], self.n)
-                w += self.lr * (y_k - phi_k @ w) @ phi_k
-        self.w = w
+                self.compute_rbf_centers(x_k)
+                phi_k = self.generate_rbf_nodes(x_k, self.n)
+                self.w += self.lr * (y_k - phi_k @ self.w) * phi_k.T
 
     def compute_rbf_centers(self, x_k):
-        np.linalg.norm(x_k)
+        distance = lambda w_i: np.linalg.norm(x_k - w_i)
+        distances = np.apply_along_axis(distance, axis = 0, arr = self.w)
 
     def init_mus(self, type = "linspace"):
         if type == "linspace":
@@ -84,7 +85,7 @@ def batch_learning(train_data, val_data):
 
 
 def delta_learning(train_data, val_data, lr = 0.2):
-    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], lr = 0.1, epochs = 20, sigma = 0.08)
+    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], lr = 0.1, epochs = 100, sigma = 0.08)
     residual_errors = {"train": [], "val": []}
     for n in range(19, 20):
         rbfnn.train_delta(n = n)
