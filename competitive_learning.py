@@ -36,7 +36,9 @@ class CompetitiveLearning(object):
             self.compute_epoch(samples, l_rate)
         return self.centers
     
-    def compute_epoch(samples, l_rate):
+    def compute_epoch(self, samples, l_rate):
+        for sample in samples:
+            self.centers = self.update_winners(sample, l_rate)
         return
     
     def update_winners(self, sample, l_rate):
