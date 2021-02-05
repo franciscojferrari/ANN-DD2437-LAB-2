@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple, Any
+from typing import Tuple, List
 import matplotlib.pyplot as plt
 
 
@@ -17,10 +17,29 @@ def load_cities() -> np.array:
     return data
 
 
-def load_mp_data() -> np.array:
+def load_mp_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     data = np.genfromtxt("data_lab2/cities.dat", dtype=None, delimiter=",")
     data = np.resize(data, (349, 31))
-    return data
+
+    mp_district = np.genfromtxt("data_lab2/mpdistrict.dat", dtype=None, delimiter=",")
+    mp_party = np.genfromtxt("data_lab2/mpparty.dat", dtype=None, delimiter=",")
+    mp_sex = np.genfromtxt("data_lab2/mpsex.dat", dtype=None, delimiter=",")
+
+    mp_sex = np.array(["blue" if i == 0 else "red" for i in mp_sex])
+
+    party_color_dict = {
+        0: "white",
+        1: "lightblue",
+        2: "black",
+        3: "red",
+        4: "brown",
+        5: "green",
+        6: "blue",
+        7: "darkgreen",
+    }
+    mp_party = np.array([party_color_dict[party] for party in mp_party])
+
+    return data, mp_district, mp_party, mp_sex
 
 
 def update_index(index: int, max_index: int) -> int:
@@ -53,11 +72,50 @@ def plot_weight_data(data):
     plt.show()
 
 
-def get_neighbor_coords(x, y):
+def plot_2d_grid(title):
+    x, y = [], []
+    for i in range(10):
+        for j in range(10):
+            x.append(i)
+            y.append(j)
+    plt.scatter(x, y, s=450, facecolors="none", edgecolors="r")
+    plt.xlim(min(x) - 1, max(x) + 1)
+    plt.ylim(min(y) - 1, max(y) + 1)
+    plt.title(title)
+    plt.axis("off")
+
+
+def plot_winner_nodes(winner_nodes: List, color_codes) -> None:
+    x, y = [], []
+    for winner_node in winner_nodes:
+        x.append(winner_node[0])
+        y.append(winner_node[1])
+    x += np.random.normal(loc=0.0, scale=0.20, size=len(x))
+    y += np.random.normal(loc=0.0, scale=0.20, size=len(y))
+    plt.scatter(x, y, s=200, c=color_codes, alpha=0.45)
+    plt.xlim(min(x) - 1, max(x) + 1)
+    plt.ylim(min(y) - 1, max(y) + 1)
+    plt.axis("off")
+    plt.show()
+
+
+def plot_occupancy(winner_nodes: List) -> None:
+    x, y = [], []
+    for winner_node in winner_nodes:
+        x.append(winner_node[0])
+        y.append(winner_node[1])
+    plt.scatter(x, y, s=400, c="blue", alpha=0.01)
+    plt.xlim(min(x) - 1, max(x) + 1)
+    plt.ylim(min(y) - 1, max(y) + 1)
+    plt.axis("off")
+    plt.show()
+
+
+def get_neighbor_coords(x, y) -> List:
     to_add = [[0, 1], [-1, 0], [0, -1], [1, 0]]
 
     return [(x + xx, y + yy) for xx, yy in to_add]
 
 
-def check_coord(coords, max_index):
+def check_coord(coords, max_index) -> bool:
     return (0 <= coords[0] <= max_index) and (0 <= coords[1] <= max_index)

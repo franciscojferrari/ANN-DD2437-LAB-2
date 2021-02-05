@@ -1,7 +1,14 @@
 import numpy as np
 import math
 from typing import Tuple, List, Any
-from som_utils import get_neighbor_coords, check_coord, load_mp_data
+from som_utils import (
+    get_neighbor_coords,
+    check_coord,
+    load_mp_data,
+    plot_2d_grid,
+    plot_winner_nodes,
+    plot_occupancy,
+)
 
 
 class SOMNetwork2D:
@@ -58,7 +65,7 @@ class SOMNetwork2D:
         """
         direct_neighbors = self.find_direct_neighbors(coords)
 
-        if depth < 2:  # TODO: check if this is the correct base-case
+        if depth < 1:
             self.current_neighbors.update(set(direct_neighbors))
             return direct_neighbors
         else:
@@ -106,19 +113,27 @@ class SOMNetwork2D:
             self.update_weights()
 
             # Empty the set.
-            self.current_neighbors = set()
+            self.current_neighbors.clear()
+
+    def predict(self) -> List:
+        winner_nodes = []
+        for data_point_idx in range(self.nr_datapoints):
+            self.current_data_point = self.data[data_point_idx]
+            winner_nodes.append(self.get_closest_node())
+
+        return winner_nodes
 
 
 if __name__ == "__main__":
     """4.3 Data Clustering: Votes of MP's"""
     # Parameters.
     number_nodes = 10  # Square grid.
-    learning_rate = 0.2
-    neighbors_start = 4
-    epochs = 20
+    learning_rate = 0.3
+    neighbors_start = 5
+    epochs = 50
 
     # Load data.
-    data = load_mp_data()
+    data, mp_district, mp_party, mp_sex = load_mp_data()
 
     # Initiate and train model.
     model = SOMNetwork2D(data, number_nodes, learning_rate, neighbors_start)
@@ -127,3 +142,16 @@ if __name__ == "__main__":
         model.update_neighbors_to_use(epoch, epochs)
 
     # Now print the result for all the 349 members of parliament.
+    winner_nodes = model.predict()
+
+    plot_2d_grid(title="Occupancy of nodes.")
+    plot_occupancy(winner_nodes)
+
+    plot_2d_grid(title="Distribution of sex.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_sex)
+
+    plot_2d_grid(title="Distribution of districts.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_district)
+
+    plot_2d_grid(title="Distribution of parties.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_party)

@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 from som_utils import (
     load_animals,
     update_index,
@@ -86,7 +87,7 @@ class SOMNetwork:
             # Update the weights.
             self.update_weights(neighborhood_list)
 
-    def predict(self) -> None:
+    def predict(self) -> List[int]:
         """Find the closest node for every animal.
 
         Returns a list containing the closest node for each datapoint (animal).
