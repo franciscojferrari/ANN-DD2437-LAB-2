@@ -41,23 +41,30 @@ class rbfNN:
     def train_delta(self, n, rbf_centers = "linspace"):
         self.n = n
         self.init_mus(rbf_centers)
+        self.compute_rbf_centers()
+
         self.w = np.random.randn(n, 1)
         for i in range(self.epochs):
             x, y = shuffle(self.x, self.y)
             for (x_k, y_k) in list(zip(x, y)):
-                self.compute_rbf_centers(x_k)
                 phi_k = self.generate_rbf_nodes(x_k, self.n)
                 self.w += self.lr * (y_k - phi_k @ self.w) * phi_k.T
 
-    def compute_rbf_centers(self, x_k):
-        distance = lambda w_i: np.linalg.norm(x_k - w_i)
-        distances = np.apply_along_axis(distance, axis = 0, arr = self.w)
+    def compute_rbf_centers(self, lr = 0.01):
+        for i in range(self.epochs):
+            x = shuffle(self.x)
+            for x_k in x:
+                distance = lambda w_i: np.linalg.norm(x_k - w_i)
+                distances = np.apply_along_axis(distance, axis = 1, arr = self.mus)
+                winner = np.argmin(distances)
+                self.mus[winner] += lr * (x_k - self.mus[winner])
+        print("sss")
 
     def init_mus(self, type = "linspace"):
         if type == "linspace":
             self.mus = np.linspace(min(self.x), max(self.x), self.n)
         if type == "competitive":
-            pass
+            self.mus = np.random.rand()
 
 
 def batch_learning(train_data, val_data):
