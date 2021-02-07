@@ -8,6 +8,7 @@ from som_utils import (
     plot_2d_grid,
     plot_winner_nodes,
     plot_occupancy,
+    plot_k_best_points,
 )
 
 
@@ -95,6 +96,25 @@ class SOMNetwork2D:
                 smallest_value = value
         return row_idx, col_idx
 
+    def get_set_of_closest_nodes(self) -> np.array:
+        """Calculate the distances to all nodes and return nodes with distances."""
+        distance_matrix = np.array([])
+        for col in range(10):
+            distances_col = np.apply_along_axis(
+                self.calc_distance, axis=1, arr=self.weights[col]
+            )
+            distance_matrix = np.append(distance_matrix, [distances_col])
+        distance_matrix = np.reshape(distance_matrix, (10, 10))
+        return distance_matrix
+
+    def calc_distances_all_data(self) -> np.array:
+        distances = []
+        for data_point_idx in range(self.nr_datapoints):
+            self.current_data_point = self.data[data_point_idx]
+            distances.append(self.get_set_of_closest_nodes())
+
+        return np.array(distances)
+
     def run(self) -> None:
         """Run the algorithm."""
         # Iterate over the data points in data set (animals).
@@ -123,6 +143,16 @@ class SOMNetwork2D:
 
         return winner_nodes
 
+    def get_k_best_points(self, k: int = 5) -> List:
+        k_best_points = []
+        m = self.calc_distances_all_data()
+        for row in range(10):
+            for col in range(10):
+                idx = np.argpartition(m[:, row, col], k)[:k]
+                k_best_points.append(idx)
+
+        return k_best_points
+
 
 if __name__ == "__main__":
     """4.3 Data Clustering: Votes of MP's"""
@@ -130,7 +160,7 @@ if __name__ == "__main__":
     number_nodes = 10  # Square grid.
     learning_rate = 0.3
     neighbors_start = 5
-    epochs = 50
+    epochs = 5
 
     # Load data.
     data, mp_district, mp_party, mp_sex = load_mp_data()
@@ -142,16 +172,28 @@ if __name__ == "__main__":
         model.update_neighbors_to_use(epoch, epochs)
 
     # Now print the result for all the 349 members of parliament.
-    winner_nodes = model.predict()
+    # winner_nodes = model.predict()
+    #
+    # plot_2d_grid(title="Occupancy of nodes.")
+    # plot_occupancy(winner_nodes)
+    #
+    # plot_2d_grid(title="Distribution of sex.")
+    # plot_winner_nodes(winner_nodes, color_codes=mp_sex)
+    #
+    # plot_2d_grid(title="Distribution of districts.")
+    # plot_winner_nodes(winner_nodes, color_codes=mp_district)
+    #
+    # plot_2d_grid(title="Distribution of parties.")
+    # plot_winner_nodes(winner_nodes, color_codes=mp_party)
 
-    plot_2d_grid(title="Occupancy of nodes.")
-    plot_occupancy(winner_nodes)
+    for k in [3,  5,  10]:
+    # k = 10
+        k_best_points = model.get_k_best_points(k=k)
+        plot_2d_grid(title=f"Plotting {k}-best points  - sex")
+        plot_k_best_points(k_best_points, color_codes=mp_sex)
 
-    plot_2d_grid(title="Distribution of sex.")
-    plot_winner_nodes(winner_nodes, color_codes=mp_sex)
+        plot_2d_grid(title=f"Plotting {k}-best points  - district")
+        plot_k_best_points(k_best_points, color_codes=mp_district)
 
-    plot_2d_grid(title="Distribution of districts.")
-    plot_winner_nodes(winner_nodes, color_codes=mp_district)
-
-    plot_2d_grid(title="Distribution of parties.")
-    plot_winner_nodes(winner_nodes, color_codes=mp_party)
+        plot_2d_grid(title=f"Plotting {k}-best points  - party")
+        plot_k_best_points(k_best_points, color_codes=mp_party)

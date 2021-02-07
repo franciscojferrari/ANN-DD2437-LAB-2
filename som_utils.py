@@ -28,13 +28,13 @@ def load_mp_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     mp_sex = np.array(["blue" if i == 0 else "red" for i in mp_sex])
 
     party_color_dict = {
-        0: "white",
-        1: "lightblue",
+        0: "orange",
+        1: "blue",
         2: "black",
         3: "red",
         4: "brown",
         5: "green",
-        6: "blue",
+        6: "darkblue",
         7: "darkgreen",
     }
     mp_party = np.array([party_color_dict[party] for party in mp_party])
@@ -119,3 +119,22 @@ def get_neighbor_coords(x, y) -> List:
 
 def check_coord(coords, max_index) -> bool:
     return (0 <= coords[0] <= max_index) and (0 <= coords[1] <= max_index)
+
+
+def plot_k_best_points(k_best_points: List, color_codes) -> None:
+    x, y = [], []
+    colors = []
+    coords = [(x, y) for x in range(10) for y in range(10)]
+    for best_points, coord in zip(k_best_points, coords):
+        for point in best_points:
+            x.append(coord[0])
+            y.append(coord[1])
+            colors.append(color_codes[point])
+
+    x += np.random.normal(loc=0.0, scale=0.20, size=len(x))
+    y += np.random.normal(loc=0.0, scale=0.20, size=len(y))
+    plt.scatter(x, y, s=200, c=colors, alpha=0.45)
+    plt.xlim(min(x) - 1, max(x) + 1)
+    plt.ylim(min(y) - 1, max(y) + 1)
+    plt.axis("off")
+    plt.show()
