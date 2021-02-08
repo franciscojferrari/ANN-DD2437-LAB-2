@@ -58,13 +58,17 @@ class rbfNN:
                 distances = np.apply_along_axis(distance, axis = 1, arr = self.mus)
                 winner = np.argmin(distances)
                 self.mus[winner] += lr * (x_k - self.mus[winner])
-        print("sss")
 
     def init_mus(self, type = "linspace"):
         if type == "linspace":
             self.mus = np.linspace(min(self.x), max(self.x), self.n)
         if type == "competitive":
-            self.mus = np.random.rand()
+            min_values = np.min(self.x, axis = 0)
+            max_values = np.max(self.x, axis = 0)
+            input_dim = self.x.shape[1]
+            self.mus = np.random.uniform(low = min_values, high = max_values, size = (self.n, input_dim))
+        if type == "samples":
+            self.mus = np.random.choice(self.x, self.n)
 
 
 def batch_learning(train_data, val_data):
