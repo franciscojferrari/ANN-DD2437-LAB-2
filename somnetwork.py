@@ -6,6 +6,7 @@ from som_utils import (
     load_cities,
     plot_city_data,
     plot_weight_data,
+    plot_animals,
 )
 
 
@@ -122,6 +123,7 @@ if __name__ == "__main__":
     result_dict = {animal: idx for animal, idx in zip(animal_names, idx_list)}
     result_dict = dict(sorted(result_dict.items(), key=lambda item: item[1]))
     print(result_dict)
+    plot_animals(result_dict)
 
     """4.2 Cyclic Tour"""
     # Parameters.

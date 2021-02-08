@@ -158,9 +158,9 @@ if __name__ == "__main__":
     """4.3 Data Clustering: Votes of MP's"""
     # Parameters.
     number_nodes = 10  # Square grid.
-    learning_rate = 0.3
+    learning_rate = 0.25
     neighbors_start = 5
-    epochs = 5
+    epochs = 50
 
     # Load data.
     data, mp_district, mp_party, mp_sex = load_mp_data()
@@ -172,28 +172,27 @@ if __name__ == "__main__":
         model.update_neighbors_to_use(epoch, epochs)
 
     # Now print the result for all the 349 members of parliament.
-    # winner_nodes = model.predict()
-    #
+    winner_nodes = model.predict()
+
     # plot_2d_grid(title="Occupancy of nodes.")
     # plot_occupancy(winner_nodes)
-    #
-    # plot_2d_grid(title="Distribution of sex.")
-    # plot_winner_nodes(winner_nodes, color_codes=mp_sex)
-    #
+
+    plot_2d_grid(title="Distribution of sex.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_sex)
+
     # plot_2d_grid(title="Distribution of districts.")
     # plot_winner_nodes(winner_nodes, color_codes=mp_district)
-    #
-    # plot_2d_grid(title="Distribution of parties.")
-    # plot_winner_nodes(winner_nodes, color_codes=mp_party)
 
-    for k in [3,  5,  10]:
-    # k = 10
+    plot_2d_grid(title="Distribution of parties.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_party)
+
+    for k in [5]:
         k_best_points = model.get_k_best_points(k=k)
         plot_2d_grid(title=f"Plotting {k}-best points  - sex")
         plot_k_best_points(k_best_points, color_codes=mp_sex)
 
-        plot_2d_grid(title=f"Plotting {k}-best points  - district")
-        plot_k_best_points(k_best_points, color_codes=mp_district)
+        # plot_2d_grid(title=f"Plotting {k}-best points  - district")
+        # plot_k_best_points(k_best_points, color_codes=mp_district)
 
         plot_2d_grid(title=f"Plotting {k}-best points  - party")
         plot_k_best_points(k_best_points, color_codes=mp_party)

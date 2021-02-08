@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple, List
+import math
+from typing import Tuple, List, Dict
 import matplotlib.pyplot as plt
 
 
@@ -27,15 +28,25 @@ def load_mp_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
     mp_sex = np.array(["blue" if i == 0 else "red" for i in mp_sex])
 
+    # party_color_dict = {
+    #     0: "magenta",
+    #     1: "cyan",
+    #     2: "black",
+    #     3: "red",
+    #     4: "brown",
+    #     5: "lawngreen",
+    #     6: "darkblue",
+    #     7: "darkgreen",
+    # }
     party_color_dict = {
-        0: "orange",
-        1: "blue",
-        2: "black",
-        3: "red",
-        4: "brown",
-        5: "green",
-        6: "darkblue",
-        7: "darkgreen",
+        0: "blue",  # no party  - R
+        1: "blue",  # m - moderate party - R
+        2: "green",  # fp  - liberals - CS
+        3: "red",   # s - social  democratic party - G
+        4: "green",  # v - left party - CS
+        5: "red",  # mp- green party - G
+        6: "blue",  # kd - christian democrats  - R
+        7: "green",  # c - centre party - CS
     }
     mp_party = np.array([party_color_dict[party] for party in mp_party])
 
@@ -121,6 +132,17 @@ def check_coord(coords, max_index) -> bool:
     return (0 <= coords[0] <= max_index) and (0 <= coords[1] <= max_index)
 
 
+def plot_animals(animal_dict: Dict) -> None:
+    radius = 10
+    for k, v in animal_dict.items():
+        x = radius * np.cos(v/100 * 2 * math.pi)
+        y = radius * np.sin(v/100 * 2 * math.pi)
+        plt.annotate(k, (x, y))
+        plt.scatter(x, y, s=20)
+    plt.axis("off")
+    plt.show()
+
+
 def plot_k_best_points(k_best_points: List, color_codes) -> None:
     x, y = [], []
     colors = []
@@ -131,8 +153,8 @@ def plot_k_best_points(k_best_points: List, color_codes) -> None:
             y.append(coord[1])
             colors.append(color_codes[point])
 
-    x += np.random.normal(loc=0.0, scale=0.20, size=len(x))
-    y += np.random.normal(loc=0.0, scale=0.20, size=len(y))
+    x += np.random.normal(loc=0.0, scale=0.15, size=len(x))
+    y += np.random.normal(loc=0.0, scale=0.15, size=len(y))
     plt.scatter(x, y, s=200, c=colors, alpha=0.45)
     plt.xlim(min(x) - 1, max(x) + 1)
     plt.ylim(min(y) - 1, max(y) + 1)
