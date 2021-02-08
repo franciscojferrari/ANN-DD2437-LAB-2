@@ -4,18 +4,9 @@
 Created on Fri Feb  5 13:01:39 2021
 
 @author: aleix
-The Competitive Learning class implements a clustering algorithm.
-It finds the centers of clusters in data via the fit method.
-
-Parameters:
-    num_clusters: int; 
-    init_type: str; How the algorithm initializes the centers of the clusters.
-        init_type can be: "random" or "samples". 
-        If random: the centers are initialized from a uniform distribution 
-        that tries to cover the sample space.
-        If samples: random samples are chosen as center inits.
-    num_winners: int; A way to aviod the dead unit problem.
-        The first num_winners will be updated.  
+This program contains some minor modifications of the original  
+competitive learning class so that an animation can be observed during the 
+learning process 
 """
 
 import numpy as np
@@ -131,27 +122,22 @@ def create_2d_clusters(num_clusters, points_per_cluster, range_limit, seed=30):
 
 """
 SMALL EXAMPLE
-Let's try to find the center of a cluster that comes from a gaussian distrib'
+Let's try to find the centers of clusters that come from a gaussian distrib'
 """
 
 num_clusters = 6
 points_per_cluster = 30
-range_limit = 10
+range_limit = 10 # all our axis go from  -range_limit to +range_limit
 input_dim = 2
 
-init_type = "uniform"
-num_winners = 3
+init_type = "samples"
+num_winners = 1
 l_rate = 0.01
 num_epochs = 30
 
 samples = create_2d_clusters(num_clusters,points_per_cluster, range_limit)
 cl = CompetitiveLearning(num_clusters, init_type, num_winners)
 centers = cl.fit(samples, num_epochs, l_rate)
-
-fig2 = plt.figure()
-plt.scatter(x=samples[:, 0], y=samples[:, 1], c="black")
-plt.scatter(x=centers[:, 0], y=centers[:, 1], c="yellow")
-
 
 fig = plt.figure()
 plt.scatter(x=samples[:, 0], y=samples[:, 1], c="black")
