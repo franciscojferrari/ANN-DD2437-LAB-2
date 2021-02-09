@@ -141,15 +141,15 @@ def delta_learning(train_data, val_data, lr = 0.1, sigma = 0.1, name = ""):
 def grid_search(train_data, val_data):
     train_errors_batch, val_errors_batch = [], []
     train_errors_delta, val_errors_delta = [], []
-
-    Index = list(range(5, 27, 2))
-    Cols = np.around(np.arange(0.1, 1.1, 0.1), 2)
-    for sigma in Cols:
+    results = {}
+    Ns = list(range(5, 27, 2))
+    Sigmas = np.around(np.arange(0.1, 1.1, 0.1), 2)
+    for sigma in Sigmas:
         train_error_batch, val_error_batch = [], []
         train_error_delta, val_error_delta = [], []
 
         rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], sigma = sigma)
-        for n in Index:
+        for n in Ns:
             rbfnn.train_batch(n)
             predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
             predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
@@ -169,12 +169,25 @@ def grid_search(train_data, val_data):
 
     val_errors_batch = np.log(np.array(val_errors_batch))
     val_errors_delta = np.log(np.array(val_errors_delta))
-    df_batch = pd.DataFrame(val_errors_batch.T, index = Index, columns = Cols)
-    df_delta = pd.DataFrame(val_errors_delta.T, index = Index, columns = Cols)
-    sns.heatmap(df_batch, cmap = "YlGnBu")
+
+    best_sigma_i, best_n_i = np.unravel_index(val_errors_batch.argmin(), val_errors_batch.shape)
+    results["batch"] = {"sigma": Sigmas[best_sigma_i], "n": Ns[best_n_i]}
+
+    best_sigma_i, best_n_i = np.unravel_index(val_errors_delta.argmin(), val_errors_delta.shape)
+    results["delta"] = {"sigma": Sigmas[best_sigma_i], "n": Ns[best_n_i]}
+
+    df_batch = pd.DataFrame(val_errors_batch.T, index = Ns, columns = Sigmas)
+    df_delta = pd.DataFrame(val_errors_delta.T, index = Ns, columns = Sigmas)
+    vmax_batch = np.median(np.sort(val_errors_batch.flatten())[-10:])
+    vmax_batch = vmax_batch if vmax_batch < 0 else 0
+    vmax_delta = np.median(np.sort(val_errors_delta.flatten())[-10:])
+    vmax_delta = vmax_delta if vmax_delta < 0 else 0
+    sns.heatmap(df_batch, cmap = "YlGnBu", vmax = vmax_batch)
     plt.show()
-    sns.heatmap(df_delta, cmap = "YlGnBu")
+    sns.heatmap(df_delta, cmap = "YlGnBu", vmax = vmax_delta)
     plt.show()
+    print(results)
+    return results
 
 
 # TODO: Import the perceptron learning from previous lab
@@ -182,7 +195,7 @@ def grid_search(train_data, val_data):
 def main():
     x_train_start, x_val_start, x_train_end, x_val_end = 0, 0.05, math.pi, math.pi
 
-    noise = False
+    noise = True
     # sigma = 0.1
     train_sin = sin(x_train_start, x_train_end, 0.1, noise = noise)
     val_sin = sin(x_val_start, x_val_end, 0.1, noise = noise)
