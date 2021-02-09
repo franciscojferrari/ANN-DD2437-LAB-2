@@ -197,8 +197,12 @@ def grid_search(train_data, val_data):
     vmax_delta = vmax_delta if vmax_delta < 0 else 0
     sns.heatmap(df_batch, cmap = "YlGnBu", vmax = vmax_batch)
     plt.show()
+    # plt.savefig("images/gridsearch_square_batch_no_noise.png")
+    # plt.close()
     sns.heatmap(df_delta, cmap = "YlGnBu", vmax = vmax_delta)
     plt.show()
+    # plt.savefig("images/gridsearch_square_delta_no_noise.png")
+    # plt.close()
     print(results)
     return results
 
@@ -207,32 +211,34 @@ def perceptron_learning(train_data, val_data):
     x_train, y_train = train_data['x'], train_data['y']
     x_val, y_val = val_data['x'], val_data['y']
 
-    nn = NueralNet(x = x_train.T, y = y_train.T, hidden_layer_size = 13, output_layer_size = 1,
-                   is_binary = False, lr = 0.015, momentum = 0.9)
-    losses = nn.train_network(6000, x_val.T, y_val.T)
+    nn = NueralNet(x = x_train.T, y = y_train.T, hidden_layer_size = 29, output_layer_size = 1,
+                   is_binary = False, lr = 0.0025, momentum = 0.9)
+    losses = nn.train_network(8000, x_val.T, y_val.T)
     plt.plot(losses["val_losses"], label = "Validation loss")
     plt.plot(losses["epoch_losses"], label = "Train loss")
     plt.xlabel("Epochs")
     plt.ylabel("Mean Squared Error loss")
     plt.legend()
-    plt.title(f"Perceptron Learning: SIN MSE Train - Validate")
+    plt.title(f"Perceptron Learning: SQUARE MSE Train - Validate")
     plt.show()
 
-    rbfnn = rbfNN(x = x_train, y = y_train, epochs = 100, sigma = 0.8)
-    losses = rbfnn.train_delta(n = 13, x_val = x_val, y_val = y_val)
+    rbfnn = rbfNN(x = x_train, y = y_train, epochs = 100, sigma = 0.2)
+    losses = rbfnn.train_delta(n = 29, x_val = x_val, y_val = y_val)
     plt.plot(losses["val_errors"], label = "Validation loss")
     plt.plot(losses["train_errors"], label = "Train loss")
     plt.xlabel("Epochs")
     plt.ylabel("Mean Squared Error loss")
     plt.legend()
-    plt.title(f"RBF Learning: SIN MSE Train - Validate")
+    plt.title(f"RBF Learning: SQUARE MSE Train - Validate")
     plt.show()
 
     predictions_val_rbf = rbfnn.predict(x = x_val, y = y_val)
     predictions_val_perceptron = nn.predict(x_val.T, y_val.T)
-    plt.plot(x_val, y_val)
-    plt.plot(x_val, predictions_val_rbf['y'])
-    plt.plot(x_val, predictions_val_perceptron['pred'].T)
+    plt.plot(x_val, y_val, label = "Validation Dataset")
+    plt.plot(x_val, predictions_val_rbf['y'], label = "RBF Predictions")
+    plt.plot(x_val, predictions_val_perceptron['pred'].T, label = "Perceptron Predictions")
+    plt.title(f"Validation Dataset Predictions")
+    plt.legend(loc = 'lower right')
     plt.show()
 
 
@@ -245,11 +251,11 @@ def main():
     val_sin = sin(x_val_start, x_val_end, 0.1, noise = noise)
     train_square = square(x_train_start, x_train_end, 0.1, noise = noise)
     val_square = square(x_val_start, x_val_end, 0.1, noise = noise)
-    # batch_learning(train_sin, val_sin, name = "Batch Sin w. Noise")
-    # delta_learning(train_sin, val_sin, name = "Delta Sin w.o. Noise")
+    # batch_learning(train_square, val_square, name = "Batch Square w. Noise")
+    # delta_learning(train_square, val_square, name = "Delta Square w. Noise")
 
-    # grid_search(train_sin, val_sin)
-    # perceptron_learning(train_sin, val_sin)
+    # grid_search(train_square, val_square)
+    perceptron_learning(train_square, val_square)
 
 
 if __name__ == '__main__':
