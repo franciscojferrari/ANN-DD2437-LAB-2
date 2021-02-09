@@ -6,6 +6,7 @@ from sklearn.utils import shuffle
 from utils import sin, square
 import seaborn as sns
 import pandas as pd
+from classification_two_layers import NueralNet
 
 
 class rbfNN:
@@ -40,10 +41,11 @@ class rbfNN:
         total_error = mean_squared_error(y, predictions)
         return {"y": predictions, "total_error": total_error}
 
-    def train_delta(self, n, rbf_centers = "linspace"):
+    def train_delta(self, n, rbf_centers = "linspace", x_val = None, y_val = None):
         self.n = n
         self.init_mus(rbf_centers)
         # self.compute_rbf_centers()
+        train_losses, val_losses = [], []
 
         self.w = np.random.randn(n, 1)
         for i in range(self.epochs):
@@ -51,6 +53,13 @@ class rbfNN:
             for (x_k, y_k) in list(zip(x, y)):
                 phi_k = self.generate_rbf_nodes(x_k, self.n)
                 self.w += self.lr * (y_k - phi_k @ self.w) * phi_k.T
+
+            train_losses.append(self.predict(self.x, self.y)['total_error'])
+            if type(x_val) and type(y_val) is np.ndarray:
+                val_results = self.predict(x_val, y_val)
+                val_losses.append(val_results['total_error'])
+
+        return {"train_errors": train_losses, "val_errors": val_losses}
 
     def compute_rbf_centers(self, lr = 0.01):
         for i in range(self.epochs):
@@ -81,7 +90,7 @@ def batch_learning(train_data, val_data, name = "", sigma = 0.1):
     val_error = []
     rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], sigma = sigma)
 
-    for n in range(8, 18):
+    for n in range(2, 35):
         rbfnn.train_batch(n)
         predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
         predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
@@ -99,22 +108,24 @@ def batch_learning(train_data, val_data, name = "", sigma = 0.1):
         plt.plot(val_data["x"], predictions_val["y"], label = "Val Predictions")
         plt.title(f"Batch : N. of RBF Nodes: {n}")
         plt.legend()
-        plt.show()
-        # plt.savefig(f"images/{name}-{n}.png")
-        # plt.close()
+        # plt.show()
+        plt.savefig(f"images/{name}-{n}.png")
+        plt.close()
     # print(residual_errors["val"])
     plt.title("Residual Errors")
     plt.plot(train_error, label = "Train Error")
     plt.plot(val_error, label = "Val Error")
     plt.legend()
-    plt.show()
+    # plt.show()
+    plt.savefig(f"images/{name}-Error.png")
+    plt.close()
 
 
 def delta_learning(train_data, val_data, lr = 0.1, sigma = 0.1, name = ""):
     rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], lr = lr, epochs = 100, sigma = sigma)
     residual_errors = {"train": [], "val": []}
 
-    for n in range(8, 18):
+    for n in range(2, 35):
         rbfnn.train_delta(n = n)
         predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
         predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
@@ -127,22 +138,24 @@ def delta_learning(train_data, val_data, lr = 0.1, sigma = 0.1, name = ""):
         plt.plot(val_data["x"], predictions_val["y"], label = "Val Predictions")
         plt.title(f"Delta : N. of RBF Nodes: {n}")
         plt.legend()
-        # plt.savefig(f"images/{name}-{n}.png")
-        # plt.close()
-        plt.show()
+        plt.savefig(f"images/{name}-{n}.png")
+        plt.close()
+        # plt.show()
 
     plt.title("Residual Errors")
     plt.plot(residual_errors["train"], label = "Train Error")
     plt.plot(residual_errors["val"], label = "Val Error")
     plt.legend()
-    plt.show()
+    plt.savefig(f"images/{name}-Error.png")
+    plt.close()
+    # plt.show()
 
 
 def grid_search(train_data, val_data):
     train_errors_batch, val_errors_batch = [], []
     train_errors_delta, val_errors_delta = [], []
     results = {}
-    Ns = list(range(5, 27, 2))
+    Ns = list(range(5, 37, 2))
     Sigmas = np.around(np.arange(0.1, 1.1, 0.1), 2)
     for sigma in Sigmas:
         train_error_batch, val_error_batch = [], []
@@ -190,10 +203,41 @@ def grid_search(train_data, val_data):
     return results
 
 
-# TODO: Import the perceptron learning from previous lab
+def perceptron_learning(train_data, val_data):
+    x_train, y_train = train_data['x'], train_data['y']
+    x_val, y_val = val_data['x'], val_data['y']
+
+    nn = NueralNet(x = x_train.T, y = y_train.T, hidden_layer_size = 13, output_layer_size = 1,
+                   is_binary = False, lr = 0.015, momentum = 0.9)
+    losses = nn.train_network(6000, x_val.T, y_val.T)
+    plt.plot(losses["val_losses"], label = "Validation loss")
+    plt.plot(losses["epoch_losses"], label = "Train loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Mean Squared Error loss")
+    plt.legend()
+    plt.title(f"Perceptron Learning: SIN MSE Train - Validate")
+    plt.show()
+
+    rbfnn = rbfNN(x = x_train, y = y_train, epochs = 100, sigma = 0.8)
+    losses = rbfnn.train_delta(n = 13, x_val = x_val, y_val = y_val)
+    plt.plot(losses["val_errors"], label = "Validation loss")
+    plt.plot(losses["train_errors"], label = "Train loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Mean Squared Error loss")
+    plt.legend()
+    plt.title(f"RBF Learning: SIN MSE Train - Validate")
+    plt.show()
+
+    predictions_val_rbf = rbfnn.predict(x = x_val, y = y_val)
+    predictions_val_perceptron = nn.predict(x_val.T, y_val.T)
+    plt.plot(x_val, y_val)
+    plt.plot(x_val, predictions_val_rbf['y'])
+    plt.plot(x_val, predictions_val_perceptron['pred'].T)
+    plt.show()
+
 
 def main():
-    x_train_start, x_val_start, x_train_end, x_val_end = 0, 0.05, math.pi, math.pi
+    x_train_start, x_val_start, x_train_end, x_val_end = 0, 0.05, math.pi * 2, math.pi * 2
 
     noise = True
     # sigma = 0.1
@@ -202,9 +246,10 @@ def main():
     train_square = square(x_train_start, x_train_end, 0.1, noise = noise)
     val_square = square(x_val_start, x_val_end, 0.1, noise = noise)
     # batch_learning(train_sin, val_sin, name = "Batch Sin w. Noise")
-    # delta_learning(train_sin, val_sin, name = "Delta Sin w. Noise")
+    # delta_learning(train_sin, val_sin, name = "Delta Sin w.o. Noise")
 
-    grid_search(train_sin, val_sin)
+    # grid_search(train_sin, val_sin)
+    # perceptron_learning(train_sin, val_sin)
 
 
 if __name__ == '__main__':
