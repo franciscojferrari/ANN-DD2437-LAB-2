@@ -15,7 +15,10 @@ Parameters:
         that tries to cover the sample space.
         If samples: random samples are chosen as center inits.
     num_winners: int; A way to aviod the dead unit problem.
-        The first num_winners will be updated.  
+        The first num_winners will be updated. 
+        
+We also have the function find_rbf_widths(rbf_centers):
+which finds the appropriate standard deviation of the Gaussians
 """
 
 import numpy as np
@@ -84,22 +87,37 @@ def find_closest_centers(sample, centers, num_closest):
         square_distances[idx_closest] = np.inf
     return indexes_closest
 
-"""
-SMALL EXAMPLE
-Let's try to find the center of a cluster that comes from a gaussian distrib'
-
-num_samples = 100
-input_dim = 2
-samples = np.random.normal(loc=0.5, scale=3, size=(num_samples, input_dim))
-cl = CompetitiveLearning(num_clusters=1, init_type="uniform")
-centers = cl.fit(samples, num_epochs=100, l_rate=0.01)
-print(centers)
-
-plt.figure()
-plt.scatter(x=samples[:, 0], y=samples[:, 1], c="black")
-plt.scatter(x=centers[:, 0], y=centers[:, 1], c="yellow")
 
 """
+Gaussians should be set according to the maximum distance between the 
+locations of the hidden nodes (d) and the number M of hidden nodes. 
+The most common choice is to pick the width of the Gaussian as sigma = d /(2 M) 
+where M is the number of RBFs.
+Marsland, Stephen. Machine Learning : An Algorithmic Perspective, 
+Second Edition, CRC Press LLC, 2014. 
+ProQuest Ebook Central, 
+http://ebookcentral.proquest.com/lib/kth/detail.action?docID=1591570.
+Created from kth on 2021-02-09 07:09:56.
+"""
+def find_maximum_distance(rbf_centers):
+    max_distance = 0
+    num_centers = rbf_centers.shape[0]
+    for i in range(num_centers):
+        # distances are symmetric, we start from i+1 to avoid recomputing
+        for j in range(i+1, num_centers): 
+            dist = np.linalg.norm(rbf_centers[i] - rbf_centers[j]) 
+            if dist > max_distance:
+                max_distance = dist
+    return max_distance
+            
+
+def find_rbf_widths(rbf_centers):
+    num_centers = rbf_centers.shape[0]
+    max_distance = find_maximum_distance(rbf_centers)
+    sigma = max_distance / np.sqrt(2*num_centers)
+    rbf_widths = sigma * np.ones(num_centers)
+    return rbf_widths
+    
 
 
 
