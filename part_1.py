@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
 from sklearn.utils import shuffle
 from utils import sin, square
+import seaborn as sns
+import pandas as pd
 
 
 class rbfNN:
@@ -41,7 +43,7 @@ class rbfNN:
     def train_delta(self, n, rbf_centers = "linspace"):
         self.n = n
         self.init_mus(rbf_centers)
-        self.compute_rbf_centers()
+        # self.compute_rbf_centers()
 
         self.w = np.random.randn(n, 1)
         for i in range(self.epochs):
@@ -68,49 +70,111 @@ class rbfNN:
             input_dim = self.x.shape[1]
             self.mus = np.random.uniform(low = min_values, high = max_values, size = (self.n, input_dim))
         if type == "samples":
-            self.mus = np.random.choice(self.x, self.n)
+            self.mus = self.x[np.random.choice(self.x.shape[0], self.n)]
 
 
-def batch_learning(train_data, val_data):
-    residual_errors = {"train": [], "val": []}
-    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'])
+# def plot_functions(*args):
 
-    for n in range(1, 20):
+
+def batch_learning(train_data, val_data, name = "", sigma = 0.1):
+    train_error = []
+    val_error = []
+    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], sigma = sigma)
+
+    for n in range(8, 18):
         rbfnn.train_batch(n)
         predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
         predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
-        residual_errors["train"].append(predictions_train["total_error"])
-        residual_errors["val"].append(predictions_train["total_error"])
-        print(f'N: {n} - Residual Error: {predictions_train["total_error"]}')
+        train_error.append(predictions_train["total_error"])
+        val_error.append(predictions_val["total_error"])
+        print(f'Batch N: {n} - Residual Error: {predictions_val["total_error"]}')
+        if name == "square":
+            predictions_val["y"][predictions_val["y"] > 0] = 1
+            predictions_val["y"][predictions_val["y"] <= 0] = -1
+            predictions_train["y"][predictions_train["y"] > 0] = 1
+            predictions_train["y"][predictions_train["y"] <= 0] = -1
+
         plt.plot(train_data["x"], train_data["y"], label = "Train")
         plt.plot(train_data["x"], predictions_train["y"], label = "Train Predictions")
         plt.plot(val_data["x"], predictions_val["y"], label = "Val Predictions")
-        plt.title(f"Function : N. of RBF Nodes: {n}")
+        plt.title(f"Batch : N. of RBF Nodes: {n}")
         plt.legend()
         plt.show()
-
-    # plt.plot(residual_errors["train"])
+        # plt.savefig(f"images/{name}-{n}.png")
+        # plt.close()
     # print(residual_errors["val"])
-    # plt.plot(residual_errors["val"])
-    # plt.show()
+    plt.title("Residual Errors")
+    plt.plot(train_error, label = "Train Error")
+    plt.plot(val_error, label = "Val Error")
+    plt.legend()
+    plt.show()
 
 
-def delta_learning(train_data, val_data, lr = 0.2):
-    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], lr = 0.1, epochs = 100, sigma = 0.08)
+def delta_learning(train_data, val_data, lr = 0.1, sigma = 0.1, name = ""):
+    rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], lr = lr, epochs = 100, sigma = sigma)
     residual_errors = {"train": [], "val": []}
-    for n in range(19, 20):
+
+    for n in range(8, 18):
         rbfnn.train_delta(n = n)
         predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
         predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
         residual_errors["train"].append(predictions_train["total_error"])
-        residual_errors["val"].append(predictions_train["total_error"])
+        residual_errors["val"].append(predictions_val["total_error"])
+        print(f'Delta N: {n} - Residual Error: {predictions_val["total_error"]}')
 
         plt.plot(train_data["x"], train_data["y"], label = "Train")
         plt.plot(train_data["x"], predictions_train["y"], label = "Train Predictions")
         plt.plot(val_data["x"], predictions_val["y"], label = "Val Predictions")
         plt.title(f"Delta : N. of RBF Nodes: {n}")
         plt.legend()
+        # plt.savefig(f"images/{name}-{n}.png")
+        # plt.close()
         plt.show()
+
+    plt.title("Residual Errors")
+    plt.plot(residual_errors["train"], label = "Train Error")
+    plt.plot(residual_errors["val"], label = "Val Error")
+    plt.legend()
+    plt.show()
+
+
+def grid_search(train_data, val_data):
+    train_errors_batch, val_errors_batch = [], []
+    train_errors_delta, val_errors_delta = [], []
+
+    Index = list(range(5, 27, 2))
+    Cols = np.around(np.arange(0.1, 1.1, 0.1), 2)
+    for sigma in Cols:
+        train_error_batch, val_error_batch = [], []
+        train_error_delta, val_error_delta = [], []
+
+        rbfnn = rbfNN(x = train_data['x'], y = train_data['y'], sigma = sigma)
+        for n in Index:
+            rbfnn.train_batch(n)
+            predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
+            predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
+            train_error_batch.append(predictions_train["total_error"])
+            val_error_batch.append(predictions_val["total_error"])
+
+            rbfnn.train_delta(n = n)
+            predictions_train = rbfnn.predict(train_data['x'], train_data['y'])
+            predictions_val = rbfnn.predict(val_data['x'], val_data['y'])
+            train_error_delta.append(predictions_train["total_error"])
+            val_error_delta.append(predictions_val["total_error"])
+
+        train_errors_batch.append(train_error_batch)
+        val_errors_batch.append(val_error_batch)
+        train_errors_delta.append(train_error_delta)
+        val_errors_delta.append(val_error_delta)
+
+    val_errors_batch = np.log(np.array(val_errors_batch))
+    val_errors_delta = np.log(np.array(val_errors_delta))
+    df_batch = pd.DataFrame(val_errors_batch.T, index = Index, columns = Cols)
+    df_delta = pd.DataFrame(val_errors_delta.T, index = Index, columns = Cols)
+    sns.heatmap(df_batch, cmap = "YlGnBu")
+    plt.show()
+    sns.heatmap(df_delta, cmap = "YlGnBu")
+    plt.show()
 
 
 # TODO: Import the perceptron learning from previous lab
@@ -118,15 +182,16 @@ def delta_learning(train_data, val_data, lr = 0.2):
 def main():
     x_train_start, x_val_start, x_train_end, x_val_end = 0, 0.05, math.pi, math.pi
 
-    noise = True
+    noise = False
+    # sigma = 0.1
     train_sin = sin(x_train_start, x_train_end, 0.1, noise = noise)
     val_sin = sin(x_val_start, x_val_end, 0.1, noise = noise)
     train_square = square(x_train_start, x_train_end, 0.1, noise = noise)
     val_square = square(x_val_start, x_val_end, 0.1, noise = noise)
-    # batch_learning(train_sin, val_sin)
-    delta_learning(train_sin, val_sin)
-    # plt.plot(train_square["x"], train_square["y"], label = "Train")
-    # plt.show()
+    # batch_learning(train_sin, val_sin, name = "Batch Sin w. Noise")
+    # delta_learning(train_sin, val_sin, name = "Delta Sin w. Noise")
+
+    grid_search(train_sin, val_sin)
 
 
 if __name__ == '__main__':
