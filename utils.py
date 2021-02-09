@@ -220,4 +220,4 @@ def square(x_range_start: float, x_range_end: float, x_step: float, noise = Fals
     sin[sin < 0] = -1
     sin = sin + (noise_values if noise else 0)
     x, y = np.reshape(x, (-1, 1)), np.reshape(sin, (-1, 1))
-    return {"x": x, "y": sin}
+    return {"x": x, "y": y}
