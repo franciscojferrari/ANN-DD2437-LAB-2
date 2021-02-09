@@ -21,7 +21,7 @@ class RBFNetwork(object):
     # train data is a tuple (x_train, y_train)
     # x_train has shape num_samples, sample_dim
     # y_train has shape num_samples, output_dim
-    def fit(self, train_data, val_data, num_epochs, l_rate=0.01):
+    def fit(self, train_data, val_data, num_epochs, l_rate=0.01, verbose=False):
         x_train, y_train = train_data
         x_val, y_val = val_data
         self.x_train_rbfs = self.compute_rbfs(x_train)
@@ -30,8 +30,12 @@ class RBFNetwork(object):
         val_mses = []
         for epoch in range(num_epochs):
             t_mse, v_mse = self.compute_epoch(y_train, y_val, l_rate)
-            train_mses.append(train_mses)
+            train_mses.append(t_mse)
             val_mses.append(v_mse)
+            if verbose:
+                print("epoch:", epoch)
+                print("train mse:", t_mse, "  val mse:", v_mse)
+                print()
         return train_mses, val_mses
     
     def predict(self, x_inputs):
@@ -42,7 +46,7 @@ class RBFNetwork(object):
         num_samples = self.x_train_rbfs.shape[0]
         for i in range(num_samples):
             x_rbf = np.copy(self.x_train_rbfs[i]) # shape num_rbfs
-            err_array = y_train - self.weights @ x_rbf # shape output_dim
+            err_array = y_train[i] - self.weights @ x_rbf # shape output_dim
             # reshape in order to prepare the matrix structure for weights 
             err_array = np.reshape(err_array, newshape=(self.output_dim, 1))
             x_rbf = np.reshape(x_rbf, newshape=(1, self.num_rbfs))
@@ -72,4 +76,48 @@ class RBFNetwork(object):
     
 def rbf_function(x, mu, sigma):
     coef = np.sum((x-mu)**2) / (2*sigma**2)
-    return np.exp(coef)
+    return np.exp(-coef)
+
+
+"""
+SMALL EXAMPLE
+
+num_train = 100
+input_dim = 2
+output_dim = 2
+num_val = 100
+num_rbfs = 10
+sigma = 0.3
+centers = np.random.uniform(size=(num_rbfs, input_dim))
+widths = sigma * np.random.uniform(size=num_rbfs) 
+verbose = True
+
+
+x_train = np.random.uniform(size=(num_train, input_dim))
+y_train = np.random.uniform(size=(num_train, output_dim))
+
+x_val = np.random.uniform(size=(num_train, input_dim))
+y_val = np.random.uniform(size=(num_train, output_dim))
+
+rbf = RBFNetwork(centers, widths, output_dim)
+train_mses, val_mses = rbf.fit((x_train, y_train), (x_val, y_val), 
+                               num_epochs=100, verbose=True)
+
+
+
+plt.figure()
+plt.plot(train_mses, label="train")
+plt.plot(val_mses, label="val")
+plt.legend()
+"""
+
+
+
+
+
+
+
+
+
+
+
