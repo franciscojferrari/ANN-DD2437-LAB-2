@@ -107,7 +107,6 @@ class SOMNetwork2D:
 
             # Find list of neighbors around the closest node.
             self.find_neighbors((row_idx, col_idx))
-            # self.current_neighbors.update([(row_idx, col_idx)])
 
             # Update the weights.
             self.update_weights()
@@ -116,6 +115,7 @@ class SOMNetwork2D:
             self.current_neighbors.clear()
 
     def predict(self) -> List:
+        """Find closest node for each data point in data set."""
         winner_nodes = []
         for data_point_idx in range(self.nr_datapoints):
             self.current_data_point = self.data[data_point_idx]
@@ -138,9 +138,9 @@ if __name__ == "__main__":
     """4.3 Data Clustering: Votes of MP's"""
     # Parameters.
     number_nodes = 10  # Square grid.
-    learning_rate = 0.25
-    neighbors_start = 5
-    epochs = 20
+    learning_rate = 0.2
+    neighbors_start = 4
+    epochs = 10
 
     # Load data.
     data, mp_district, mp_party, mp_sex = load_mp_data()
