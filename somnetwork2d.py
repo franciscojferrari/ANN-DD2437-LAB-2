@@ -137,7 +137,7 @@ class SOMNetwork2D:
 if __name__ == "__main__":
     """4.3 Data Clustering: Votes of MP's"""
     # Parameters.
-    number_nodes = 10  # Square grid.
+    number_nodes = 10  # Square grid 10x10.
     learning_rate = 0.2
     neighbors_start = 4
     epochs = 10
@@ -162,8 +162,8 @@ if __name__ == "__main__":
     plot_2d_grid(title="Distribution of sex.")
     plot_winner_nodes(winner_nodes, color_codes=mp_sex)
 
-    # plot_2d_grid(title="Distribution of districts.")
-    # plot_winner_nodes(winner_nodes, color_codes=mp_district)
+    plot_2d_grid(title="Distribution of districts.")
+    plot_winner_nodes(winner_nodes, color_codes=mp_district)
 
     plot_2d_grid(title="Distribution of parties.")
     plot_winner_nodes(winner_nodes, color_codes=mp_party)
@@ -173,8 +173,8 @@ if __name__ == "__main__":
         plot_2d_grid(title=f"Plotting {k}-best points  - sex")
         plot_k_best_points(k_best_points, color_codes=mp_sex)
 
-        # plot_2d_grid(title=f"Plotting {k}-best points  - district")
-        # plot_k_best_points(k_best_points, color_codes=mp_district)
+        plot_2d_grid(title=f"Plotting {k}-best points  - district")
+        plot_k_best_points(k_best_points, color_codes=mp_district)
 
         plot_2d_grid(title=f"Plotting {k}-best points  - party")
         plot_k_best_points(k_best_points, color_codes=mp_party)
