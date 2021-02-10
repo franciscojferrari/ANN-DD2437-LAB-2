@@ -28,26 +28,26 @@ def load_mp_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
     mp_sex = np.array(["blue" if i == 0 else "red" for i in mp_sex])
 
-    # party_color_dict = {
-    #     0: "magenta",
-    #     1: "cyan",
-    #     2: "black",
-    #     3: "red",
-    #     4: "brown",
-    #     5: "lawngreen",
-    #     6: "darkblue",
-    #     7: "darkgreen",
-    # }
     party_color_dict = {
-        0: "blue",  # no party  - R
-        1: "blue",  # m - moderate party - R
-        2: "green",  # fp  - liberals - CS
-        3: "red",   # s - social  democratic party - G
-        4: "green",  # v - left party - CS
-        5: "red",  # mp - green party - G
-        6: "blue",  # kd - christian democrats  - R
-        7: "green",  # c - centre party - CS
+        0: "magenta",
+        1: "cyan",
+        2: "black",
+        3: "red",
+        4: "brown",
+        5: "lawngreen",
+        6: "darkblue",
+        7: "darkgreen",
     }
+    # party_color_dict = {
+    #     0: "blue",  # no party  - R
+    #     1: "blue",  # m - moderate party - R
+    #     2: "green",  # fp  - liberals - CS
+    #     3: "red",   # s - social  democratic party - G
+    #     4: "green",  # v - left party - CS
+    #     5: "red",  # mp - green party - G
+    #     6: "blue",  # kd - christian democrats  - R
+    #     7: "green",  # c - centre party - CS
+    # }
     mp_party = np.array([party_color_dict[party] for party in mp_party])
 
     return data, mp_district, mp_party, mp_sex

@@ -66,33 +66,25 @@ class SOMNetwork2D:
         """Calculates distance between two vectors."""
         return np.linalg.norm(x - self.current_data_point)
 
-    def get_closest_node_column(self, col) -> Tuple[Any, Any]:
-        """Returns row id for smallest value in column."""
-        distance_matrix = np.apply_along_axis(
-            self.calc_distance, axis=1, arr=self.weights[col]
-        )
-        return np.argmin(distance_matrix), min(distance_matrix)
-
     def get_closest_node(self) -> Tuple[Any, Any]:
         """Calculate the distances to all nodes and return node index of closest node."""
         smallest_value = math.inf
         row_idx, col_idx = None, None
-        for col in range(10):
-            row_idx_t, value = self.get_closest_node_column(col)
-            if value < smallest_value:
-                row_idx, col_idx = row_idx_t, col
-                smallest_value = value
+
+        for row in range(10):
+            for col in range(10):
+                value = self.calc_distance(self.weights[row][col])
+                if value < smallest_value:
+                    row_idx, col_idx = row, col
+                    smallest_value = value
         return row_idx, col_idx
 
     def get_set_of_closest_nodes(self) -> np.array:
         """Calculate the distances to all nodes and return nodes with distances."""
-        distance_matrix = np.array([])
-        for col in range(10):
-            distances_col = np.apply_along_axis(
-                self.calc_distance, axis=1, arr=self.weights[col]
-            )
-            distance_matrix = np.append(distance_matrix, [distances_col])
-        distance_matrix = np.reshape(distance_matrix, (10, 10))
+        distance_matrix = np.zeros((10, 10))
+        for row in range(10):
+            for col in range(10):
+                distance_matrix[row][col] = self.calc_distance(self.weights[row][col])
         return distance_matrix
 
     def calc_distances_all_data(self) -> np.array:
