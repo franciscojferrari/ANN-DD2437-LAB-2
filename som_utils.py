@@ -44,7 +44,7 @@ def load_mp_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         2: "green",  # fp  - liberals - CS
         3: "red",   # s - social  democratic party - G
         4: "green",  # v - left party - CS
-        5: "red",  # mp- green party - G
+        5: "red",  # mp - green party - G
         6: "blue",  # kd - christian democrats  - R
         7: "green",  # c - centre party - CS
     }
@@ -120,16 +120,6 @@ def plot_occupancy(winner_nodes: List) -> None:
     plt.ylim(min(y) - 1, max(y) + 1)
     plt.axis("off")
     plt.show()
-
-
-def get_neighbor_coords(x, y) -> List:
-    to_add = [[0, 1], [-1, 0], [0, -1], [1, 0]]
-
-    return [(x + xx, y + yy) for xx, yy in to_add]
-
-
-def check_coord(coords, max_index) -> bool:
-    return (0 <= coords[0] <= max_index) and (0 <= coords[1] <= max_index)
 
 
 def plot_animals(animal_dict: Dict) -> None:

@@ -2,8 +2,6 @@ import numpy as np
 import math
 from typing import Tuple, List, Any
 from som_utils import (
-    get_neighbor_coords,
-    check_coord,
     load_mp_data,
     plot_2d_grid,
     plot_winner_nodes,
@@ -22,13 +20,14 @@ class SOMNetwork2D:
         self.neighbors_start = neighbors
         self.neighbors_to_use = neighbors
         self.nr_datapoints, self.nr_attributes = data.shape
+        print(f"Number  of data points: {self.nr_datapoints},  Number of attributes: {self.nr_attributes}")
         self.weights = None
         self.weights_shape = (nr_nodes, nr_nodes, self.nr_attributes)
         self.lr = lr
 
         # Variable used while training.
         self.current_data_point = None
-        self.current_neighbors = set()
+        self.current_neighbors = []
 
         # Set up weights.
         self.init_weights()
@@ -46,33 +45,22 @@ class SOMNetwork2D:
     def update_weights(self) -> None:
         """Update the weights for the given nodes."""
         for node_index in self.current_neighbors:
-            x, y = node_index[0], node_index[1]
+            x, y = node_index
             self.weights[x][y] += self.lr * (
                 self.current_data_point - self.weights[x][y]
             )
 
-    def find_direct_neighbors(self, coords) -> List[Tuple[int, int]]:
-        """Returns the direct neighbors of a node"""
-        x, y = coords
-        neighbor_coords = get_neighbor_coords(x, y)
-
-        return [
-            coord for coord in neighbor_coords if check_coord(coord, self.nr_nodes - 1)
-        ]
-
-    def find_neighbors(self, coords: Tuple[int, int], depth: int):
+    def find_neighbors(self, coords: Tuple[int, int]):
         """With the index of the current node it finds all neighbors and return the indices of
         the neighbors.
         """
-        direct_neighbors = self.find_direct_neighbors(coords)
-
-        if depth < 1:
-            self.current_neighbors.update(set(direct_neighbors))
-            return direct_neighbors
-        else:
-            self.current_neighbors.update(set(direct_neighbors))
-            for coords in direct_neighbors:
-                self.find_neighbors(coords, depth - 1)
+        neighbors_coords = []
+        x,  y = coords
+        for xx in range(10):
+            for yy in range(10):
+                if abs(x - xx) + abs(y-yy) <= self.neighbors_to_use:
+                    neighbors_coords.append([xx, yy])
+        self.current_neighbors = neighbors_coords
 
     def calc_distance(self, x):
         """Calculates distance between two vectors."""
@@ -117,7 +105,7 @@ class SOMNetwork2D:
 
     def run(self) -> None:
         """Run the algorithm."""
-        # Iterate over the data points in data set (animals).
+        # Iterate over the data points in data set.
         for data_point_idx in range(self.nr_datapoints):
             # Get current data point.
             self.current_data_point = self.data[data_point_idx]
@@ -126,8 +114,8 @@ class SOMNetwork2D:
             row_idx, col_idx = self.get_closest_node()
 
             # Find list of neighbors around the closest node.
-            self.find_neighbors((row_idx, col_idx), self.neighbors_to_use)
-            self.current_neighbors.update([(row_idx, col_idx)])
+            self.find_neighbors((row_idx, col_idx))
+            # self.current_neighbors.update([(row_idx, col_idx)])
 
             # Update the weights.
             self.update_weights()
@@ -160,7 +148,7 @@ if __name__ == "__main__":
     number_nodes = 10  # Square grid.
     learning_rate = 0.25
     neighbors_start = 5
-    epochs = 50
+    epochs = 20
 
     # Load data.
     data, mp_district, mp_party, mp_sex = load_mp_data()
@@ -170,6 +158,8 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         model.run()
         model.update_neighbors_to_use(epoch, epochs)
+        if epoch % 5 == 0:
+            print(f"Epoch number: {epoch}")
 
     # Now print the result for all the 349 members of parliament.
     winner_nodes = model.predict()
